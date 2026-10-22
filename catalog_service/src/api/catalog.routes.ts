@@ -38,7 +38,7 @@ router.patch("/products/:id", async (req: Request, res: Response, next: NextFunc
         if (errors) {
             return res.status(400).json(errors)
         }
-        const data = await catalogService.updateProduct({id, ...input}) ; 
+        const data = await catalogService.updateProduct({ id, ...input });
 
         return res.status(200).json(data);
     } catch (error) {
@@ -46,4 +46,37 @@ router.patch("/products/:id", async (req: Request, res: Response, next: NextFunc
         res.status(500).json(err.message)
     }
 })
-export default router; 
+
+router.get(
+    "/products",
+    async (req: Request, res: Response, next: NextFunction) => {
+        const limit = req.query.limit === undefined
+            ? 10
+            : Number(req.query.limit);
+
+        const offset = req.query.offset === undefined
+            ? 0
+            : Number(req.query.offset);
+
+        if (
+            !Number.isInteger(limit) ||
+            limit < 1 ||
+            !Number.isInteger(offset) ||
+            offset < 0
+        ) {
+            return res.status(400).json({
+                message: "limit must be a positive integer and offset must be a non-negative integer",
+            });
+        }
+
+        try {
+            const data = await catalogService.getProducts(limit, offset);
+            return res.status(200).json(data);
+        } catch (error) {
+            const err = error as Error;
+            return res.status(500).json(err.message);
+        }
+    }
+);
+
+export default router;

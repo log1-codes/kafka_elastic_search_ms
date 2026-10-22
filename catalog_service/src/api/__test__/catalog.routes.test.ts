@@ -32,7 +32,7 @@ describe("Catalog Routes", () => {
                 .send(requestBody)
                 .set("Accept", "application/json")
 
-            console.log("TEST RESPONSE", response);
+            // console.log("TEST RESPONSE", response);
 
             expect(response.status).toBe(201)
 
@@ -65,7 +65,7 @@ describe("Catalog Routes", () => {
                 .send(requestBody)
                 .set("Accept", "application/json")
 
-            console.log("TEST RESPONSE", response);
+            // console.log("TEST RESPONSE", response);
 
             expect(response.status).toBe(500)
 
@@ -90,7 +90,7 @@ describe("Catalog Routes", () => {
                 .send(requestBody)
                 .set("Accept", "application/json")
 
-            console.log("TEST RESPONSE", response);
+            // console.log("TEST RESPONSE", response);
 
             expect(response.status).toBe(200)
 
@@ -127,13 +127,59 @@ describe("Catalog Routes", () => {
                 .send(requestBody)
                 .set("Accept", "application/json")
 
-            console.log("TEST RESPONSE", response);
+            // console.log("TEST RESPONSE", response);
 
             expect(response.status).toBe(500)
 
             expect(response.body).toEqual("unable to update product")
 
         })
+
+    })
+
+
+    describe("GET /products?limit=0&offset=0", () => {
+        test("should return a range of products based on limit and offset", async () => {
+            const randomLimit = faker.number.int({ min: 10, max: 50 })
+            const products = ProductFactory.buildList(randomLimit);
+
+            jest.spyOn(catalogService, 'getProducts')
+                .mockImplementationOnce(() => Promise.resolve(products))
+            const response = await request(app)
+                .get(`/products?limit=${randomLimit}&offset=0`)
+                .set("Accept", "application/json")
+
+            // console.log("TEST RESPONSE", response);
+            expect(response.status).toBe(200)
+            expect(response.body).toEqual(products)
+
+        })
+
+
+
+        test("should respond with validation error", async () => {
+            const response = await request(app)
+                .get("/products?limit=abc&offset=0")
+                .set("Accept", "application/json");
+
+            expect(response.status).toBe(400);
+        });
+
+        test("should respond with an internal error code 500", async () => {
+            jest
+                .spyOn(catalogService, "getProducts")
+                .mockRejectedValueOnce(
+                    new Error("error occured on get products")
+                );
+
+            const response = await request(app)
+                .get("/products?limit=10&offset=0")
+                .set("Accept", "application/json");
+
+            expect(response.status).toBe(500);
+            expect(response.body).toEqual("error occured on get products");
+        });
+
 
     })
 })
