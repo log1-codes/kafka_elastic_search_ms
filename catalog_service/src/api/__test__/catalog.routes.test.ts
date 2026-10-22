@@ -183,7 +183,7 @@ describe("Catalog Routes", () => {
 
     })
 
-    describe.only("GET /products/:id", () => {
+    describe("GET /products/:id", () => {
         test("should return  a product based by id", async () => {
 
             const product = ProductFactory.build();
@@ -229,6 +229,56 @@ describe("Catalog Routes", () => {
           
             expect(response.status).toBe(500);
             expect(response.body).toEqual("error occured on get product");
+          });
+    })
+
+
+    describe("DELETE /products/:id", () => {
+        test("should delete a product by id", async () => {
+
+            const product = ProductFactory.build();
+            
+            jest.spyOn(catalogService, 'deleteProduct')
+                .mockImplementationOnce(() => Promise.resolve({id : product.id}))
+            const response = await request(app)
+                .delete(`/products/${product.id}`)
+                .set("Accept", "application/json")
+
+            // console.log("TEST RESPONSE", response);
+            expect(response.status).toBe(200)
+            expect(response.body).toEqual({id: product.id})
+
+        })
+
+        test("should respond with validation error for invalid product ID", async () => {
+            const product = ProductFactory.build();
+          
+            jest
+              .spyOn(catalogService, "deleteProduct")
+              .mockRejectedValueOnce(new Error("Invalid product ID"));
+          
+            const response = await request(app)
+              .delete(`/products/${product.id}`)
+              .set("Accept", "application/json");
+          
+            expect(response.status).toBe(500);
+          });
+
+          test("should respond with an internal error code 500", async () => {
+            const product = ProductFactory.build();
+          
+            jest
+              .spyOn(catalogService, "deleteProduct")
+              .mockRejectedValueOnce(
+                new Error("error occured on delete product")
+              );
+          
+            const response = await request(app)
+              .delete(`/products/${product.id}`)
+              .set("Accept", "application/json");
+          
+            expect(response.status).toBe(500);
+            expect(response.body).toEqual("error occured on delete product");
           });
     })
 })
