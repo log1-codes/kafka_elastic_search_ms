@@ -36,7 +36,6 @@ export class CatalogService {
 
     async getProduct(id: number) {
         const product = await this._repository.findOne(id)
-
         return product
     }
 

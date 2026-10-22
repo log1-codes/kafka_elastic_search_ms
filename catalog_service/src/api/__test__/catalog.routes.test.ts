@@ -182,4 +182,53 @@ describe("Catalog Routes", () => {
 
 
     })
+
+    describe.only("GET /products/:id", () => {
+        test("should return  a product based by id", async () => {
+
+            const product = ProductFactory.build();
+            
+            jest.spyOn(catalogService, 'getProduct')
+                .mockImplementationOnce(() => Promise.resolve(product))
+            const response = await request(app)
+                .get(`/products/${product.id}`)
+                .set("Accept", "application/json")
+
+            // console.log("TEST RESPONSE", response);
+            expect(response.status).toBe(200)
+            expect(response.body).toEqual(product)
+
+        })
+
+        test("should respond with validation error for invalid product ID", async () => {
+            const product = ProductFactory.build();
+          
+            jest
+              .spyOn(catalogService, "getProduct")
+              .mockRejectedValueOnce(new Error("Invalid product ID"));
+          
+            const response = await request(app)
+              .get(`/products/${product.id}`)
+              .set("Accept", "application/json");
+          
+            expect(response.status).toBe(500);
+          });
+          
+          test("should respond with an internal error code 500", async () => {
+            const product = ProductFactory.build();
+          
+            jest
+              .spyOn(catalogService, "getProduct")
+              .mockRejectedValueOnce(
+                new Error("error occured on get product")
+              );
+          
+            const response = await request(app)
+              .get(`/products/${product.id}`)
+              .set("Accept", "application/json");
+          
+            expect(response.status).toBe(500);
+            expect(response.body).toEqual("error occured on get product");
+          });
+    })
 })

@@ -4,6 +4,7 @@ import { CatalogService } from '../services/catalog.service';
 import { RequestValidator } from '../utils/requestValidator';
 import { CreateProductRequest } from '../dto/product.dto';
 import { UpdateProductRequest } from '../dto/product.dto';
+import { parse } from 'node:path';
 const router = express.Router();
 
 export const catalogService = new CatalogService(new CatalogRepository())
@@ -71,6 +72,24 @@ router.get(
 
         try {
             const data = await catalogService.getProducts(limit, offset);
+            return res.status(200).json(data);
+        } catch (error) {
+            const err = error as Error;
+            return res.status(500).json(err.message);
+        }
+    }
+);
+
+router.get(
+    "/products/:id",
+    async (req: Request, res: Response, next: NextFunction) => {
+        const id = parseInt(req.params.id[0])
+        if(!id)
+        {
+            return res.status(500).json("Invalid product ID")
+        }
+        try {
+            const data = await catalogService.getProduct(id);
             return res.status(200).json(data);
         } catch (error) {
             const err = error as Error;
