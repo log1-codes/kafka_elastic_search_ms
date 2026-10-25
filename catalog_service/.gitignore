@@ -1,3 +1,10 @@
 node_modules
 dist
 coverage
+.claude
+.cursor
+.devin
+.agents
+.windsurf
+.env
+/src/generated/prisma
